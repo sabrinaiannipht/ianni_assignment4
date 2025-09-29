@@ -1,0 +1,228 @@
+---
+title: "NHANES Dataset Summary"
+author: Sabrina Ianni 260189219
+output: pdf_document
+date: "2025-09-29"
+bibliography: references.bib
+---
+
+## The NHANES dataset 
+
+### This NHANES dataset covers three waves of data collection: 2015, 2016, and 2017. It examines patterns in blood pressure across gender, age, and ethnicity, along with other demographic data. In this summary report, we focus specifically on key statistics related to gender and ethnicity, across the three waves.
+
+
+
+
+```{r, echo = FALSE}
+# Prepare the data
+# table for overall sample size  of each wave 
+
+pacman::p_load(rio, here, tidyverse, dplyr, kableExtra, knitr)
+
+cleaned_NHANES <- import(here("cleaned_NHANES.csv"))
+
+table_sample_bywave <- table(
+  cleaned_NHANES$wave_id
+)
+
+```
+
+
+``` {r, echo = FALSE}
+
+#table - by wave and gender
+table_bywave_gender <- table(
+  cleaned_NHANES$wave_id, cleaned_NHANES$gender)
+
+#extracting males only 
+table_bywave_males <- table_bywave_gender[, "Male"]
+
+```
+## Proportion of male participants by wave: 
+
+### The table (Table 1) below presents the percentage of male participants in the dataset for each wave. As shown, the proportion of male participants remains relatively consistent across waves, averaging around 49%. We also note that our largest sample was in 2015 with over 10000 participants, with the sample size slightly decreasing with each wave.
+
+``` {r, echo = FALSE}
+
+## Create the data frame to include 
+
+wave_summary <- data.frame(
+  wave_id = names(table_sample_bywave),
+  total = as.numeric(table_sample_bywave),
+  males = as.numeric(table_bywave_males)
+)
+
+# Add percentage of males
+wave_summary <- wave_summary %>%
+  mutate(pct_male = round((males / total) * 100, 1))
+
+
+kable(wave_summary, 
+      format = "latex", 
+      booktabs = TRUE, 
+      caption = "Distribution of Males by Wave",
+      col.names = c("Year", "Sample", "No. of Males", "% of Males")) %>%
+        kable_styling(
+          latex_options = "hold_position", 
+          full_width = FALSE
+  )
+
+```
+
+
+
+## Distribution of ethnicities by wave: 
+### The table (Table 2) below shows the proportion of participants from each ethnic group across the three waves. The majority of participants were categorized as "White," while the smallest groups were "Other" and "Other Hispanic." Overall, the distribution of ethnicities remained relatively consistent across all waves.
+
+``` {r, echo = FALSE}
+
+#table including percentage of each ethnicity 
+table_eth <- table(
+  cleaned_NHANES$wave_id, cleaned_NHANES$ethnicity_2)
+
+
+row_percents_eth <- prop.table(table_eth, margin = 1) * 100 
+
+
+#combining data
+counts_df <- as.data.frame.matrix(table_eth)
+pct_df <- as.data.frame.matrix(row_percents_eth)
+
+
+# Rename columns to indicate % where appropriate
+colnames(pct_df) <- paste0(colnames(pct_df), "_pct")
+
+# Combine counts + percentages side by side
+ethnicity_summary <- cbind(wave_id = rownames(counts_df), counts_df, pct_df)
+rownames(ethnicity_summary) <- NULL
+
+
+
+ethnicity_summary_ordered <- ethnicity_summary %>%
+  select(
+    wave_id,
+    Asian, Asian_pct,
+    Black, Black_pct,
+    Mexican, Mexican_pct,
+    Other, Other_pct,
+    `Other Hispanic`, `Other Hispanic_pct`,
+    White, White_pct
+  )
+
+
+ethnicity_summary_ordered <- ethnicity_summary_ordered %>%
+  mutate(across(ends_with("_pct"), ~ round(.x,1)))
+
+library(knitr)
+
+col_names <- c(
+  "Wave",
+  "Asian (n)", "Asian (%)",
+  "Black (n)", "Black (%)",
+  "Mexican (n)", "Mexican (%)",
+  "Other (n)", "Other (%)",
+  "Other Hispanic (n)", "Other Hispanic (%)",
+  "White (n)", "White (%)"
+)
+col_names_clean <- c(
+  "Wave",
+  "(n)", "(%)",   # Asian
+  "(n)", "(%)",   # Black
+  "(n)", "(%)",   # Mexican
+  "(n)", "(%)",   # Other
+  "(n)", "(%)",   # Other Hispanic
+  "(n)", "(%)"    # White
+)
+
+ethnicity_summary_ordered %>%
+  kable(col.names = col_names_clean, 
+        caption = "Ethnicity Distribution by Wave (Counts \\& Percentages)") %>%
+  kable_styling(full_width = FALSE, font_size = 9) %>%
+  add_header_above(c(
+    " " = 1,
+    "Asian" = 2,
+    "Black" = 2,
+    "Mexican" = 2,
+    "Other" = 2,
+    "Other Hispanic" = 2,
+    "White" = 2
+  )) %>%
+  column_spec(3, background = "#e0e0e0") %>%
+  column_spec(5, background = "#e0e0e0") %>%
+  column_spec(7, background = "#e0e0e0") %>%
+  column_spec(9, background = "#e0e0e0") %>%
+  column_spec(11, background = "#e0e0e0") %>%
+  column_spec(13, background = "#e0e0e0")
+
+```
+
+\newpage 
+
+
+## Summary Statistics of Average Systolic Blood Pressure by year: 
+
+### Table 3 presents summary statistics for average systolic blood pressure, including the mean, minimum, maximum, and standard deviation for each wave. The results show a consistent trend across all three waves, with only slight variations in the measured values. 
+
+
+
+
+
+```{r, echo = FALSE}
+
+cleaned_NHANES_2 <- cleaned_NHANES %>%
+  select(-ethnicity_1)
+cleaned_NHANES_3<- cleaned_NHANES_2 %>%
+  mutate(
+    sbp_avg = rowMeans(select(., systolic_bp_1, systolic_bp_2, systolic_bp_3, systolic_bp_4), 
+                       na.rm = TRUE))
+
+
+sbp_summary_by_wave <- cleaned_NHANES_3 %>%
+  group_by(wave_id) %>%
+  summarise(
+    n = sum(!is.na(sbp_avg)),
+    min_sbp = round(min(sbp_avg, na.rm = TRUE), 1),
+    max_sbp = round(max(sbp_avg, na.rm = TRUE), 1),
+    mean_sbp = round(mean(sbp_avg, na.rm = TRUE), 1),
+    sd_sbp = round(sd(sbp_avg, na.rm = TRUE), 1)
+  )
+
+kable(sbp_summary_by_wave, 
+      caption = "Summary Statistics by Wave",
+      format = "latex",
+      booktabs = TRUE, 
+      col.names = c("Year", "n", "Minimum SBP", "Maximum SBP", "Mean SBP", "SD SBP") 
+      ) %>%
+  footnote(
+    general = "SBP: Systolic blood pressure, SD: Standard Deviation", 
+    title_format = "italic",
+    footnote_as_chunk = TRUE
+  ) %>%
+  kable_styling(
+    full_width = FALSE, font_size = 9
+  )
+```
+
+
+# References
+@CDC_NHANES
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
