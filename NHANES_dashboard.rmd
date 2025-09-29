@@ -1,0 +1,78 @@
+---
+title: "NHANES Dataset"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+date: "2025-09-26"
+---
+
+```{r, include=FALSE}
+pacman::p_load(rio, here, tidyverse, flexdashboard, dplyr)
+cleaned_NHANES <- import(here("assignment_4_docs", "cleaned_NHANES.csv"))
+
+```
+
+
+
+
+
+Row {data-height=650}
+----------------------------------------------------------------------
+
+### Distribution of Age across gender 
+
+```{r, echo = FALSE, fig.width=8, fig.height=5}
+age_gender_plot <- ggplot(cleaned_NHANES, aes(x = age_cat, fill = gender)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Distribution of Age", x = "Age (years)", y = "Count") +
+  theme_minimal()
+age_gender_plot
+```
+
+
+
+
+Row {data-height=350}
+------------------------------------------------------------------------
+
+### Percentage of individuals 21 years or older 
+
+```{r, echo = FALSE}
+over_21_pct <- cleaned_NHANES %>%
+  summarise(pct = mean(age > 21) * 100) %>%
+  pull(pct)
+gauge(
+  value = over_21_pct,
+  min = 0,
+  max = 100,
+  symbol = '%',
+  gaugeSectors(success = c(75, 100), warning = c(50, 75), danger = c(0, 50)
+               )
+)
+```
+
+
+-----------------------------------------------------------------
+
+### Percentage of Individuals with average systolic blood pressure >120mmHg
+
+```{r, echo = FALSE}
+cleaned_NHANES_2 <- cleaned_NHANES %>%
+  select(-ethnicity_1)
+
+cleaned_NHANES_3<- cleaned_NHANES_2 %>%
+  mutate(
+    sbp_avg = rowMeans(select(., systolic_bp_1, systolic_bp_2, systolic_bp_3, systolic_bp_4), 
+                       na.rm = TRUE))
+
+pct_high_sbp <- mean(cleaned_NHANES_3$sbp_avg > 120, na.rm = TRUE) * 100
+
+valueBox(
+  value = paste0(round(pct_high_sbp, 1), "%"),
+  caption = "with avg systolic BP > 120",
+  icon = "fa-tachometer-alt",
+  color = "danger"
+)
+```
+
