@@ -1,23 +1,32 @@
 # Sabrina Ianni - Assignment 4
 # NHANES Data Analysis Report
 
-This repository contains an R Markdown analysis report based on the National Health and Nutrition Examination Survey (NHANES) dataset. The analysis includes data cleaning, exploratory data visualization, and summary statistics related to demographics and blood pressure.
+This repository contains my work for Assignment 4, which includes data analysis into an `.html` output, dashboard creation, and complex table creation using NHANES dataset and other resources.
 
-## Files
+---
 
-- `assignment4_exercise4.Rmd` – The main R Markdown report.
-- `assignment4_exercise4.pdf` – The rendered PDF report.
-- `cleaned_NHANES.csv` – The cleaned dataset used in the analysis.
-- `references.bib` – Bibliographic references for cited sources.
-- `README.md` 
+## Repository Structure
 
-## Analysis Overview
+- **Exercise_2_docs/**  
+  Contains documents and analysis related to Exercise 2.
 
-- Distribution of age and gender
-- Ethnicity breakdown by wave (2015–2017)
-- Percentage of adults over 21
-- Blood pressure statistics by year
-- Summary tables using `kableExtra`
+- **Exercise_3_dashboard/**  
+  Contains dashboard files and visualizations for Exercise 3.
+
+- **Exercise_4_complex_tables/**  
+  Includes scripts and output (PDF) related to creating complex tables in Exercise 4.
+
+- **datasets/**  
+  Contains raw and cleaned datasets used throughout the assignments, including those from assignment 3.
+
+- **README.md**  
+  This file — provides an overview of the repository.
+
+- **.DS_Store**  
+  System file created by macOS, can be ignored.
+
+---
+
 
 ## Packages Used
 
