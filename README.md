@@ -8,7 +8,7 @@ This repository contains my work for Assignment 4, which includes data analysis 
 ## Repository Structure
 
 - **Exercise_2_docs/**  
-  Contains documents and analysis related to Exercise 2.
+  Contains the `.Rmd` and `.html` documents related to Exercise 2. These documents were derived from previous data and documents from Assignment 3, which have also been included in this file.
 
 - **Exercise_3_dashboard/**  
   Contains dashboard files and visualizations for Exercise 3.
